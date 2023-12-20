@@ -664,16 +664,22 @@ def get_training_image_uri(
         container_version = None
         base_framework_version = None
 
-    # Check for smp library
-    if distribution is not None:
-        if "torch_distributed" in distribution and "smdistributed" in distribution:
-            if "modelparallel" in distribution["smdistributed"]:
-                if distribution["smdistributed"]["modelparallel"].get("enabled", True):
-                    framework = "pytorch-smp"
-                    if "p5" in instance_type:
-                        container_version = "cu121"
-                    else:
-                        container_version = "cu118"
+    # Check for the smp library.
+    if (
+        distribution is not None and
+        # Primary keys.
+        "torch_distributed" in distribution and
+        "smdistributed" in distribution and
+        # Secondary keys.
+        "modelparallel" in distribution["smdistributed"] and
+        # Secondary values.
+        distribution["smdistributed"]["modelparallel"].get("enabled", True)
+    ):
+        framework = "pytorch-smp"
+        if "p5" in instance_type:
+            container_version = "cu121"
+        else:
+            container_version = "cu118"
 
     return retrieve(
         framework,
